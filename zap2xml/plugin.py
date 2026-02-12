@@ -754,6 +754,15 @@ class Plugin:
             s = _re.sub(r"\s+", " ", s).strip()
             return s
 
+        def _normalize_logo_url(url: str) -> str:
+            s = (url or "").strip()
+            if not s:
+                return ""
+            if s.startswith("//"):
+                s = "https:" + s
+            s = s.replace("zap2it.tmsimg.com", "dshm.tmsimg.com")
+            return s
+
         def _load_xml_channels(xml_path: str):
             m = {}
             if not xml_path or not Path(xml_path).exists():
@@ -765,7 +774,7 @@ class Plugin:
                     sid = ch_el.get("id") or ""
                     names = [(dn.text or "").strip() for dn in ch_el.findall("./display-name") if (dn.text or "").strip()]
                     icon_el = ch_el.find("./icon")
-                    icon = icon_el.get("src") if icon_el is not None else ""
+                    icon = _normalize_logo_url(icon_el.get("src") if icon_el is not None else "")
                     for nm in names:
                         m[_norm(nm)] = {"id": sid, "names": names, "icon": icon}
                 return m
@@ -823,7 +832,7 @@ class Plugin:
                                         cur.execute(f"SELECT {ucol} FROM {table} WHERE lower({ncol})=lower(?) LIMIT 1", (val,))
                                         row = cur.fetchone()
                                         if row and row[0]:
-                                            return str(row[0])
+                                            return _normalize_logo_url(str(row[0]))
                                     except Exception:
                                         continue
                     # like
@@ -847,7 +856,7 @@ class Plugin:
                                         cur.execute(f"SELECT {ucol} FROM {table} WHERE lower({ncol}) LIKE lower(?) LIMIT 1", (f"%{val}%",))
                                         row = cur.fetchone()
                                         if row and row[0]:
-                                            return str(row[0])
+                                            return _normalize_logo_url(str(row[0]))
                                     except Exception:
                                         continue
                 except Exception:
@@ -933,6 +942,7 @@ class Plugin:
                 logo_url = _logo_from_channels_db(raw_name, callsign)
                 if not logo_url:
                     logo_url = icon_for_station.get(station_id, "")
+                logo_url = _normalize_logo_url(logo_url)
 
                 if logo_url and hasattr(ch, "logo"):
                     try:
