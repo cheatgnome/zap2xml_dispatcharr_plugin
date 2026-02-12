@@ -581,14 +581,14 @@ def _is_movie_or_sports(ev, program):
             "sports" in genres or etype == "sports")
 
 def _ensure_asset_url(s: str) -> str:
-    """Ensure full https://zap2it.tmsimg.com/assets/<name>[.jpg] and strip query."""
+    """Ensure full https://dshm.tmsimg.com/assets/<name>[.jpg] and strip query."""
     if not s:
         return s
     s0 = str(s).split("?", 1)[0]
     if s0.startswith("//"):
         s0 = "https:" + s0
     if not s0.startswith("http"):
-        s0 = "https://zap2it.tmsimg.com/assets/" + s0.lstrip("/")
+        s0 = "https://dshm.tmsimg.com/assets/" + s0.lstrip("/")
     tail = s0.rsplit("/", 1)[-1]
     if "." not in tail:
         s0 += ".jpg"
@@ -602,7 +602,8 @@ def _program_icon(program: Dict[str, Any], ev: Dict[str, Any]) -> Optional[str]:
     icon = icon or program.get("image") or ev.get("thumbnail")
     if not icon:
         return None
-    return _ensure_asset_url(str(icon))
+    icon_str = str(icon).replace("zap2it.tmsimg.com", "dshm.tmsimg.com")
+    return _ensure_asset_url(icon_str)
 
 # ---------- XML writer ----------
 
